@@ -13,83 +13,59 @@ variable "name_prefix" {
 # Generic Resource Variables
 variable "name" {
   type        = string
-  description = "(Required) Specifies the name of the Public IP resource . Changing this forces a new resource to be created."
+  description = "(Required) The Name which should be used for this VPN Gateway. Changing this forces a new resource to be created."
 }
   
 variable "resource_group_name" {
   type        = string
-  description = "(Required) The name of the resource group in which to create the public ip."
+  description = "(Required) The Name of the Resource Group in which this VPN Gateway should be created. Changing this forces a new resource to be created."
 }
 
 variable "location" {
   type        = string
-  description = "(Required) Specifies the supported Azure location where the resource exists. Changing this forces a new resource to be created."
+  description = "(Required) The Azure location where this VPN Gateway should be created. Changing this forces a new resource to be created."
 }
 
-variable "allocation_method" {
+variable "virtual_hub_id" {
   type        = string
-  description = "(Required) Defines the allocation method for this IP address. Possible values are Static or Dynamic."
-  default     = "Static"
-}
-
-variable "zones" {
-  type        = list(string)
-  description = "(Optional) A collection containing the availability zone to allocate the Public IP in."
-  default     = ["1", "2", "3"]
-}
-
-variable "domain_name_label" {
-  type        = string
-  description = "(Optional) Label for the Domain Name. Will be used to make up the FQDN. If a domain name label is specified, an A DNS record is created for the public IP in the Microsoft Azure DNS system."
+  description = "(Required) The ID of the Virtual Hub within which this VPN Gateway should be created. Changing this forces a new resource to be created."
   default     = null
 }
 
-variable "edge_zone" {
+variable "routing_preference" {
   type        = string
-  description = "(Optional) Specifies the Edge Zone within the Azure Region where this Public IP should exist. Changing this forces a new Public IP to be created."
+  description = "(Optional) Azure routing preference lets you to choose how your traffic routes between Azure and the internet. You can choose to route traffic either via the Microsoft network (default value, Microsoft Network), or via the ISP network (public internet, set to Internet). More context of the configuration can be found in the Microsoft Docs to create a VPN Gateway. Changing this forces a new resource to be created."
   default     = null
 }
 
-variable "idle_timeout_in_minutes" {
+variable "scale_unit" {
   type        = number
-  description = "(Optional) Specifies the timeout for the TCP idle connection. The value can be set between 4 and 30 minutes."
+  description = "(Optional) The Scale Unit for this VPN Gateway. Defaults to 1."
+  default     = 1
+}
+
+variable "bgp_settings_enabled" {
+  type        = bool
+  description = "to enable the block"
+  default     = false
+}
+
+variable "bgp_settings_asn" {
+  type        = string
+  description = "(Required) The ASN of the BGP Speaker. Changing this forces a new resource to be created."
   default     = null
 }
 
-variable "ip_tags" {
-  type        = map(string)
-  description = "(Optional) A mapping of IP tags to assign to the public IP."
+variable "bgp_settings_peer_weight" {
+  type        = string
+  description = "(Required) The weight added to Routes learned from this BGP Speaker. Changing this forces a new resource to be created."
   default     = null
 }
 
-variable "ip_version" {
-  type        = string
-  description = "(Optional) The IP Version to use, IPv6 or IPv4."
-  default     = "IPv4"
-}
-
-variable "public_ip_prefix_id" {
-  type        = string
-  description = "(Optional) If specified then public IP address allocated will be provided from the public IP prefix resource."
+variable "bgp_settings_custom_ips" {
+  type        = list(string)
+  description = "(Required) A list of custom BGP peering addresses to assign to this instance."
   default     = null
-}
-
-variable "reverse_fqdn" {
-  type        = string
-  description = "(Optional) A fully qualified domain name that resolves to this public IP address. If the reverseFqdn is specified, then a PTR DNS record is created pointing from the IP address in the in-addr.arpa domain to the reverse FQDN."
-  default     = null
-}
-
-variable "sku" {
-  type        = string
-  description = "(Optional) The SKU of the Public IP. Accepted values are Basic and Standard. Defaults to Basic."
-  default     = "Standard"
-}
-
-variable "sku_tier" {
-  type        = string
-  description = "(Optional) The SKU Tier that should be used for the Public IP. Possible values are Regional and Global. Defaults to Regional."
-  default     = "Regional"
 }
 
 variable "tags" {
