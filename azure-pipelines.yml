@@ -1,76 +1,17 @@
----
 trigger:
-  branches:
-    include:
-    - '*'
+      branches:
+        include: 
+        - '*'
 
-pool:
-  vmImage: ubuntu-latest
+resources:
+  repositories:
+  - repository: templates
+    type: git
+    name: templates
+    ref: refs/heads/main
 
 variables:
-  - group: terraform-var-group
+  - template: template-vars.yml@templates
 
-stages :
-  - stage: InitializePipeline
-    displayName: 'Initialize Pipeline'
-    jobs:
-      - job: initializePipeline
-        steps:
-        - script: echo hello from the DevOps world
-
-  - stage: QACheckStage
-    displayName: 'QA Check Stage'
-    dependsOn: 
-    - InitializePipeline
-    jobs:
-      - job: tflint
-        displayName: 'Run Terraform Linter'
-        steps:
-        - script: |
-            docker pull ghcr.io/terraform-linters/tflint:latest
-            docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -v $(System.DefaultWorkingDirectory):/data -t ghcr.io/terraform-linters/tflint
-          displayName: 'Terraform Super-Linter Code Scan'
-  
-  - stage: SecurityCheckStage
-    displayName: 'Security Check Stage'
-    dependsOn: 
-    - InitializePipeline
-    jobs:
-      - job: TFSecJob
-        displayName: Run TFSec Scan
-        steps:
-        - script: |
-            mkdir TFSecReport
-            docker pull aquasec/tfsec:latest
-            docker run --rm -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -v $(System.DefaultWorkingDirectory):/src aquasec/tfsec /src --format JUnit > $(System.DefaultWorkingDirectory)/TFSecReport/TFSec-Report.xml
-            docker run --rm -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -v $(System.DefaultWorkingDirectory):/src aquasec/tfsec /src
-          displayName: TFSec Static Code Analysis
-          condition: always()
-        - task: PublishBuildArtifacts@1
-          displayName: 'Publish Artifact: TFSec Report'
-          condition: succeededOrFailed()
-          inputs:
-            PathtoPublish: '$(System.DefaultWorkingDirectory)/TFSecReport'
-            ArtifactName: TFSecReport
-  
-  - stage: CloudBestPracticeStage
-    displayName: 'Cloud Best Practice Stage'
-    dependsOn: 
-    - InitializePipeline
-    jobs:
-      - job: CheckovJob
-        displayName: Run Checkov Scan
-        steps:
-        - script: |
-            mkdir CheckovReport
-            docker pull bridgecrew/checkov
-            docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -v $(System.DefaultWorkingDirectory):/tf bridgecrew/checkov --directory /tf --output junitxml > $(System.DefaultWorkingDirectory)/CheckovReport/Checkov-Report.xml
-            docker run -e RUN_LOCAL=true -e USE_FIND_ALGORITHM=true -v $(System.DefaultWorkingDirectory):/tf bridgecrew/checkov --directory /tf
-          displayName: 'Checkov Static Code Ananlysis'
-          condition: always()
-        - task: PublishBuildArtifacts@1
-          displayName: 'Publish Artifact: Checkov Report'
-          condition: succeededOrFailed()
-          inputs:
-            PathtoPublish: '$(System.DefaultWorkingDirectory)/CheckovReport'
-            ArtifactName: CheckovReport
+stages:
+ - template: ${{ variables.l1_pipeline_template }}@templates
